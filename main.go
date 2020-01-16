@@ -29,6 +29,30 @@ func login(w http.ResponseWriter, r *http.Request){
 	}
 }
 
+func about(w http.ResponseWriter, r *http.Request){
+	fmt.Println("Method: ", r.Method) // get request method
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles("templates/about.html")
+		t.Execute(w, nil)
+	} else {
+		r.ParseForm()
+		fmt.Println("Username: ", r.Form["username"])
+		fmt.Println("Password: ", r.Form["password"])
+	}
+}
+
+func signin(w http.ResponseWriter, r *http.Request){
+	fmt.Println("Method: ", r.Method) // get request method
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles("templates/login.html")
+		t.Execute(w, nil)
+	} else {
+		r.ParseForm()
+		fmt.Println("Username: ", r.Form["username"])
+		fmt.Println("Password: ", r.Form["password"])
+	}
+}
+
 func index(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Method: ", r.Method) // get request method
 	if r.Method == "GET" {
@@ -78,7 +102,8 @@ func main() {
 	http.HandleFunc("/", index)              // set router
 	http.HandleFunc("/index", index)              // set router
     // http.HandleFunc("/html", html)           // set router
-	http.HandleFunc("/login", login)           // set router
+	http.HandleFunc("/login", login)
+	http.HandleFunc("/about", about)           // set router
     err := http.ListenAndServe(":9091", nil) // set listen port
     if err != nil {
         log.Fatal("Error running service: ", err)
