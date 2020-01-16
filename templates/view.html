@@ -1,0 +1,64 @@
+<html>
+    <head>
+        <title>Login</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    </head>
+    <body> 
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>                        
+                    </button>
+                    <a class="navbar-brand" href="#">Lalala</a>
+                </div>
+                <div class="collapse navbar-collapse" id="myNavbar">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="#">User</a></li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- <div class="jumbotron">
+            <div class="container text-center">
+                <h1>My Portfolio</h1>      
+                <p>Some text that represents "Me"...</p>
+            </div>
+        </div> -->
+
+        <div class="container-fluid bg-3 text-center">    
+            <div class="row">
+                <div class="col-md-12">
+                    <h3 class="text-left">Manajemen User</h3>
+                    <table class="table table-bordered">
+                        <tr>
+                            <td>User Id</td>
+                            <td>Username</td>
+                            <td>Department</td>
+                            <td>Tanggal Dibuat  </td>
+                        </tr>
+                        {{range .Users}}
+                            <tr>
+                                <td>{{ .Uid }}</td>
+                                <td>{{ .Username }}</td>
+                                <td>{{ .Department }}</td>
+                                <td>{{ .Created }}</td>
+                            </tr>
+                        {{else}}
+                        
+                        {{end}}
+                    </table>
+                </div>
+            </div>
+        </div><br>
+        <footer class="container-fluid text-center">
+            <p>Footer Text</p>
+        </footer>
+    </body>
+</html>
