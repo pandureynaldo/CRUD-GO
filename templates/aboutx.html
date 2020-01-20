@@ -68,7 +68,7 @@
 			<div id="center-header">
 				<div class="container">
 					<div class="header-logo">
-						<a href="#" class="logo"><span style="font-size: xx-large;font-weight:900;">Artikel. <span style="color: burlywood;">GO~ {{.Username}} {{.Role}}</span></span></a>	
+						<a href="#" class="logo"><span style="font-size: xx-large;font-weight:900;">Artikel. <span style="color: burlywood;">GO~ {{.Username .Role}}</span></span></a>	
 					</div>
 					<div class="header-ads">
 						<img class="center-block" src="../static/images/icons/symbol-01.png" alt=""> 
@@ -1073,40 +1073,6 @@
 		<script src="../static/magnews/js/bootstrap.min.js"></script>
 		<script src="../static/magnews/js/owl.carousel.min.js"></script>
 		<script src="../static/magnews/js/main.js"></script>
-
-		<script type="application/javascript">
-		
-		$(document).ready(function(){
-			var errs = {{.Error}}
-
-			if(errs !== '') {
-				alert(errs)
-				window.location = '/login'
-			}
-
-			// var c = getCookie('session-name')
-			// if(c === ''){
-			// 	alert('LOGIN DULU WOY')
-			// 	window.location = '/login'
-			// }
-		})
-
-		// function getCookie(cname) {
-		// 	var name = cname + "=";
-		// 	var ca = document.cookie.split(';');
-		// 	for(var i = 0; i < ca.length; i++) {
-		// 		var c = ca[i];
-		// 		while (c.charAt(0) == ' ') {
-		// 		c = c.substring(1);
-		// 		}
-		// 		if (c.indexOf(name) == 0) {
-		// 		return c.substring(name.length, c.length);
-		// 		}
-		// 	}
-		// 	return "";
-		// }
-
-		</script>
 
 	</body>
 </html>

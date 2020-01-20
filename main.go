@@ -28,6 +28,57 @@ type User struct {
 	Status string `json:"status"`
 }
 
+func CheckSession(s *sessions.Session) map[string]string{
+	// var username, role, errs string
+
+	resp := make(map[string]string)
+	if s.Values["username"] != nil {
+		resp["username"] = s.Values["username"].(string)
+	}
+
+	if s.Values["role"] != nil {
+		resp["role"] = s.Values["role"].(string)
+	}
+
+	if s.Values["username"] == nil || s.Values["role"] == nil {
+		resp["errs"] = "Mohon login"
+	}
+
+	return resp
+
+}
+
+func home(w http.ResponseWriter, r *http.Request){
+	fmt.Println("Method: ", r.Method) // get request method
+	if r.Method == "GET" {
+		t, _ := template.ParseFiles("templates/index.html")
+		t.Execute(w, nil)
+	} else {
+		r.ParseForm()
+		fmt.Println("Username: ", r.Form["username"])
+		username := r.Form["username"][0]
+		fmt.Println("Password: ", r.Form["password"])
+		password := r.Form["password"][0]
+		user := QueryUser(username,password);
+		session, err := store.Get(r, "session-name")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		session.Values["username"] = user.Username
+		session.Values["role"] = user.Role
+		err = session.Save(r, w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/about", 301)
+		fmt.Println(session)
+		fmt.Println(user)
+		
+	}
+}
+
 func login(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Method: ", r.Method) // get request method
 	if r.Method == "GET" {
@@ -45,6 +96,16 @@ func login(w http.ResponseWriter, r *http.Request){
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		session.Values["username"] = user.Username
+		session.Values["role"] = user.Role
+		err = session.Save(r, w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/home", 301)
+		fmt.Println(session)
+		fmt.Println(user)
 		
 	}
 }
@@ -80,9 +141,33 @@ func QueryUser(username string, password string) User {
 
 func about(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Method: ", r.Method) // get request method
+	session, err := store.Get(r, "session-name")
+	if err != nil{
+		fmt.Println(err)
+	}
+
+	// if len(session.Values) == 0 {
+	// 	http.Redirect(w, r, "/login", 301)
+	// 	return
+	// }
+
+	s := CheckSession(session)	
+
 	if r.Method == "GET" {
-		t, _ := template.ParseFiles("templates/about.html")
-		t.Execute(w, nil)
+		data := struct {
+			Username string
+			Role string
+			Error string
+		}{
+			Username: s["username"],
+			Role: s["role"],
+			Error: s["errs"],
+		}
+		t, err := template.ParseFiles("templates/about.html")
+		if err != nil{
+			fmt.Println(err)
+		}
+		t.Execute(w, data)
 	} else {
 		r.ParseForm()
 		fmt.Println("Username: ", r.Form["username"])
