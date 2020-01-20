@@ -9,6 +9,7 @@ import (
 	"log"
 	"html/template"
 	"github.com/gorilla/sessions"
+	// "reflect"
 )
 
 var (
@@ -35,15 +36,16 @@ func login(w http.ResponseWriter, r *http.Request){
 	} else {
 		r.ParseForm()
 		fmt.Println("Username: ", r.Form["username"])
-		username := r.Form["username"]
+		username := r.Form["username"][0]
 		fmt.Println("Password: ", r.Form["password"])
-		password := r.Form["password"]
-		fmt.Println(username, password)
-		user, err := QueryUser(username,password);
+		password := r.Form["password"][0]
+		user := QueryUser(username,password);
+		session, err := store.Get(r, "session-name")
 		if err != nil {
-			log.Fatalln(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		fmt.Println(user)
+		
 	}
 }
 
@@ -58,7 +60,7 @@ func QueryUser(username string, password string) User {
 		SELECT id, 
 		username, 
 		password, 
-		role,  
+		role  
 		FROM users WHERE username=? and password=? and status=?
 		`, username, password, 1).
 		Scan(
@@ -67,6 +69,10 @@ func QueryUser(username string, password string) User {
 			&users.Password,
 			&users.Role,
 		)
+	if err != nil{
+		fmt.Println(err)
+	}
+	fmt.Println(users)
 	defer db.Close()
 	return users
 }
