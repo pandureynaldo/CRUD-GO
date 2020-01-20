@@ -8,13 +8,23 @@ import (
 	"net/http"
 	"log"
 	"html/template"
+	"github.com/gorilla/sessions"
+)
+
+var (
+    // key must be 16, 24 or 32 bytes long (AES-128, AES-192 or AES-256)
+    key = []byte("this-is-secret")
+    store = sessions.NewCookieStore(key)
 )
 
 type User struct {
-	Uid   int    `json:"uid"`
+	Id   int    `json:"id"`
 	Username string `json:"username"`
-	Department string `json:"department"`
-	Created string `json:"created"`
+	Password string `json:"password"`
+	Created_at string `json:"created_at"`
+	Updated_at string `json:"updated_at"`
+	Role string `json:"role"`
+	Status string `json:"status"`
 }
 
 func login(w http.ResponseWriter, r *http.Request){
@@ -25,9 +35,42 @@ func login(w http.ResponseWriter, r *http.Request){
 	} else {
 		r.ParseForm()
 		fmt.Println("Username: ", r.Form["username"])
+		username := r.Form["username"]
 		fmt.Println("Password: ", r.Form["password"])
+		password := r.Form["password"]
+		fmt.Println(username, password)
+		user, err := QueryUser(username,password);
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Println(user)
 	}
 }
+
+
+func QueryUser(username string, password string) User {
+	db, err := sql.Open("mysql", "root:@/sa_db?charset=utf8")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	var users = User{}
+	err = db.QueryRow(`
+		SELECT id, 
+		username, 
+		password, 
+		role,  
+		FROM users WHERE username=? and password=? and status=?
+		`, username, password, 1).
+		Scan(
+			&users.Id,
+			&users.Username,
+			&users.Password,
+			&users.Role,
+		)
+	defer db.Close()
+	return users
+}
+
 
 func about(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Method: ", r.Method) // get request method
@@ -41,10 +84,10 @@ func about(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func signin(w http.ResponseWriter, r *http.Request){
+func contact(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Method: ", r.Method) // get request method
 	if r.Method == "GET" {
-		t, _ := template.ParseFiles("templates/login.html")
+		t, _ := template.ParseFiles("templates/contact.html")
 		t.Execute(w, nil)
 	} else {
 		r.ParseForm()
@@ -65,45 +108,15 @@ func index(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func view(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Method: ", r.Method) // get request method
-	if r.Method == "GET" {
-		db, err := sql.Open("mysql", "root:@/test_golang?charset=utf8")
-		// query
-		results, err := db.Query("select * from userinfo")
-		checkErr(err)
-		var users []User
-		for results.Next() {
-			var item_user User
-			// for each row, scan the result into our tag composite object
-			err = results.Scan(&item_user.Uid, &item_user.Username, &item_user.Department, &item_user.Created)
-			if err != nil {
-				panic(err.Error()) // proper error handling instead of panic in your app
-			}
-			users = append(users, User{Uid: item_user.Uid, Username: item_user.Username, Department: item_user.Department,  Created: item_user.Created })
-		}
-		defer db.Close()
-
-		t, _ := template.ParseFiles("../templates_manajemen/view.html")
-		fmt.Println(users)
-		data := struct {
-			Users []User
-		}{
-			Users: users,
-		}
-		t.Execute(w, data)
-	} else {
-		fmt.Println("oke")
-	}
-}
-
 func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/", index)              // set router
 	http.HandleFunc("/index", index)              // set router
     // http.HandleFunc("/html", html)           // set router
 	http.HandleFunc("/login", login)
-	http.HandleFunc("/about", about)           // set router
+	http.HandleFunc("/about", about)  
+	http.HandleFunc("/contact", contact)           // set router
+	
     err := http.ListenAndServe(":9091", nil) // set listen port
     if err != nil {
         log.Fatal("Error running service: ", err)
